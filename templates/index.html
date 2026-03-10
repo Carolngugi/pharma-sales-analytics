@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharma Sales Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e1a;
+            --surface: #111827;
+            --card: #1a2235;
+            --border: #1e2d45;
+            --accent: #00e5ff;
+            --accent2: #7c3aed;
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --green: #10b981;
+            --red: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0a0e1a 0%, #111827 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 24px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.4rem;
+            letter-spacing: 3px;
+            color: var(--accent);
+            text-shadow: 0 0 30px rgba(0,229,255,0.3);
+        }
+
+        header span {
+            font-size: 0.85rem;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        .container { padding: 32px 40px; }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .summary-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .summary-card:hover { transform: translateY(-3px); }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+        }
+
+        .summary-card .drug-code {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.4rem;
+            color: var(--accent);
+            letter-spacing: 2px;
+        }
+
+        .summary-card .category {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .summary-card .total {
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .summary-card .label {
+            font-size: 0.72rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Filters */
+        .filters-panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .filters-panel h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        select {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus { border-color: var(--accent); }
+
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-top: 8px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+            background: var(--border);
+            border-radius: 24px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .slider:before {
+            content: '';
+            position: absolute;
+            width: 18px; height: 18px;
+            left: 3px; top: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        input:checked + .slider { background: var(--accent); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .toggle-label { font-size: 0.85rem; color: var(--muted); }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #000;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* Results Table */
+        .results-panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-header h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            color: var(--accent);
+        }
+
+        .results-count {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .table-wrap { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        thead th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+
+        tbody tr:hover { background: rgba(0,229,255,0.04); }
+
+        tbody td {
+            padding: 12px 16px;
+            color: var(--text);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-anti { background: rgba(239,68,68,0.15); color: #f87171; }
+        .badge-analgesic { background: rgba(16,185,129,0.15); color: #34d399; }
+        .badge-sedative { background: rgba(124,58,237,0.15); color: #a78bfa; }
+        .badge-sleeping { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .badge-respiratory { background: rgba(245,158,11,0.15); color: #fbbf24; }
+        .badge-antihistamine { background: rgba(236,72,153,0.15); color: #f472b6; }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .units-value { font-weight: 500; color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>💊 Pharma Sales Analytics</h1>
+    <span>2014 — 2019 &nbsp;|&nbsp; 8 Drug Categories &nbsp;|&nbsp; 404,256 Records</span>
+</header>
+
+<div class="container">
+
+    <!-- Summary Cards -->
+    <div class="summary-grid" id="summaryGrid">
+        <div class="loading">Loading summary...</div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-panel">
+        <h2>🔍 Filters</h2>
+        <div class="filters-grid">
+
+            <div class="filter-group">
+                <label>Drug</label>
+                <select id="filterDrug">
+                    <option value="">All Drugs</option>
+                    {% for drug in drugs %}
+                    <option value="{{ drug.drug_id }}">{{ drug.drug_code }} — {{ drug.drug_category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Year</label>
+                <select id="filterYear">
+                    <option value="">All Years</option>
+                    {% for y in years %}
+                    <option value="{{ y.year }}">{{ y.year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Month</label>
+                <select id="filterMonth">
+                    <option value="">All Months</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Hour</label>
+                <select id="filterHour">
+                    <option value="">All Hours</option>
+                    {% for h in range(0, 24) %}
+                    <option value="{{ h }}">{{ '%02d'|format(h) }}:00</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Weekday</label>
+                <select id="filterWeekday">
+                    <option value="">All Days</option>
+                    <option>Monday</option>
+                    <option>Tuesday</option>
+                    <option>Wednesday</option>
+                    <option>Thursday</option>
+                    <option>Friday</option>
+                    <option>Saturday</option>
+                    <option>Sunday</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Values</label>
+                <div class="toggle-wrap">
+                    <label class="toggle">
+                        <input type="checkbox" id="toggleNormalized">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="toggle-label" id="toggleLabel">Raw Values</span>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label>&nbsp;</label>
+                <button class="btn" onclick="applyFilters()">Apply Filters</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="results-panel">
+        <div class="results-header">
+            <h2>📊 Sales Data</h2>
+            <span class="results-count" id="resultsCount">—</span>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Drug Code</th>
+                        <th>Category</th>
+                        <th>Year</th>
+                        <th>Month</th>
+                        <th>Hour</th>
+                        <th>Weekday</th>
+                        <th>Units Sold</th>
+                    </tr>
+                </thead>
+                <tbody id="salesBody">
+                    <tr><td colspan="8" class="loading">Apply filters to load data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const badgeMap = {
+        'Anti-inflammatory': 'badge-anti',
+        'Analgesic': 'badge-analgesic',
+        'Sedative': 'badge-sedative',
+        'Sleeping Pills': 'badge-sleeping',
+        'Respiratory': 'badge-respiratory',
+        'Antihistamine': 'badge-antihistamine'
+    };
+
+    // Load summary cards on page load
+    fetch('/api/summary')
+        .then(r => r.json())
+        .then(data => {
+            const grid = document.getElementById('summaryGrid');
+            grid.innerHTML = data.map(d => `
+                <div class="summary-card">
+                    <div class="drug-code">${d.drug_code}</div>
+                    <div class="category">${d.drug_category}</div>
+                    <div class="total">${d.total_sales.toLocaleString()}</div>
+                    <div class="label">Total Units Sold</div>
+                    <div style="margin-top:10px; font-size:0.8rem; color:var(--muted)">
+                        Avg: ${d.avg_sales} &nbsp;|&nbsp; Max: ${d.max_sales}
+                    </div>
+                </div>
+            `).join('');
+        });
+
+    // Toggle label
+    document.getElementById('toggleNormalized').addEventListener('change', function() {
+        document.getElementById('toggleLabel').textContent = 
+            this.checked ? 'Normalized' : 'Raw Values';
+    });
+
+    function applyFilters() {
+        const drug = document.getElementById('filterDrug').value;
+        const year = document.getElementById('filterYear').value;
+        const month = document.getElementById('filterMonth').value;
+        const hour = document.getElementById('filterHour').value;
+        const weekday = document.getElementById('filterWeekday').value;
+        const normalized = document.getElementById('toggleNormalized').checked;
+
+        const params = new URLSearchParams();
+        if (drug) params.append('drug_id', drug);
+        if (year) params.append('year', year);
+        if (month) params.append('month', month);
+        if (hour) params.append('hour', hour);
+        if (weekday) params.append('weekday', weekday);
+        params.append('normalized', normalized);
+
+        document.getElementById('salesBody').innerHTML = 
+            '<tr><td colspan="8" class="loading">Loading...</td></tr>';
+
+        fetch('/api/sales?' + params.toString())
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('resultsCount').textContent = 
+                    `${data.length} records shown (max 500)`;
+
+                if (data.length === 0) {
+                    document.getElementById('salesBody').innerHTML = 
+                        '<tr><td colspan="8" class="loading">No results found.</td></tr>';
+                    return;
+                }
+
+                document.getElementById('salesBody').innerHTML = data.map(row => `
+                    <tr>
+                        <td>${row.datum}</td>
+                        <td><strong>${row.drug_code}</strong></td>
+                        <td><span class="badge ${badgeMap[row.drug_category] || ''}">${row.drug_category}</span></td>
+                        <td>${row.year}</td>
+                        <td>${row.month}</td>
+                        <td>${row.hour}:00</td>
+                        <td>${row.weekday}</td>
+                        <td class="units-value">${row.units_sold}</td>
+                    </tr>
+                `).join('');
+            });
+    }
+</script>
+
+</body>
+</html>
