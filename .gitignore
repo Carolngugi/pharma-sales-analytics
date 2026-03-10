@@ -1,0 +1,7 @@
+pharma.db
+__pycache__/
+*.pyc
+.DS_Store
+data/
+archive (1)/
+.ipynb_checkpoints/
